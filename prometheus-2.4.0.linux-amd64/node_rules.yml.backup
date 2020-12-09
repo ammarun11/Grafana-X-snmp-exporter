@@ -1,0 +1,40 @@
+groups:
+- name: node.rules
+  rules:
+  - alert: InstanceDown
+    expr: up{} == 0
+    for: 2m
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "Instance {{ $labels.instance }} of job {{ $labels.job }} has been down for more than 2 minutes."
+
+  - alert: disk_space_almost_exhausted
+    expr: |
+      node_filesystem_size_bytes / node_filesystem_size_bytes * 100 <= 90
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: 'Instance {{ $labels.instance }} of job {{ $labels.job }} has disk space less than 10% (current value: {{ printf "%.2f" $value }}%) for 5 minutes'
+      summary: 'Disk space almost exhausted'
+
+  - alert: memory_usage_above_90_percent
+    expr: |
+      (((node_memory_MemTotal_bytes - node_memory_MemFree_bytes - node_memory_Cached_bytes) / (node_memory_MemTotal_bytes) * 100)) > 90
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: 'Instance {{ $labels.instance }} of job {{ $labels.job }} has memory usage above 90% (current value: {{ printf "%.2f" $value }}%) for over 5 minutes'
+      summary: 'Memory usage above 90%'
+
+  - alert: HostCPUUtilisation
+    expr: 100 - (avg by(instance) (irate(node_cpu{mode="idle"}[5m])) * 100) > 2
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      description: 'High CPU utilisation detected for instance {{ $labels.instance_id
+        }} tagged as: {{ $labels.instance_name_tag }}, the utilisation is currently:
+        {{ $value }}%'
+      summary: CPU Utilisation Alert

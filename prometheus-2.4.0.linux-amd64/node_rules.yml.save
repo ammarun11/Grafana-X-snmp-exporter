@@ -1,0 +1,10 @@
+groups:
+- name: node.rules
+  rules:
+  - alert: InstanceDown
+    expr: up{instance="10.20.21.238:9100",job="dc01testinfra01"} == 0
+    for: 2m
+    annotations:
+      summary: "Instance {{ $labels.instance }} down"
+      description: "Instance {{ $labels.instance }} of job {{ $labels.job }} has been down for more than 2 minutes."
+
